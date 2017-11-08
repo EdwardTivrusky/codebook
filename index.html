@@ -1,0 +1,118 @@
+<!doctype html>
+<html lang="en">
+<head>
+	<meta charset="utf-8" />
+</head>
+<body>
+	
+	<div style="margin: 0 auto; width: 928px">
+		<div>
+			<div><label for="message">(Decrypted) Message</label></div>
+			<div>
+				<textarea id="messageHex" placeholder="Hex view" style="border: 1px solid grey; width: 450px; min-width: 450px; max-width: 450px; height: 256px; min-height: 256px; max-height: 256px; display: inline-block;" readonly></textarea>
+				<textarea id="message" style="border: 1px solid black; width: 450px; min-width: 450px; max-width: 450px; height: 256px; min-height: 256px; max-height: 256px; display: inline-block;"></textarea>
+			</div>
+		</div>
+		
+		
+		<button id="encrypt" style="margin: 0 auto; border: 1px solid black; width: 160px; display: block;">Encrypt</button>
+		<div style="text-align:center">
+			<input id="password" style="margin: 0 auto; border: 1px solid black; width: 640px;" placeholder="Password" />
+		</div>
+		<button id="decrypt" style="margin: 0 auto; border: 1px solid black; width: 160px; display: block;">Decrypt</button>
+		
+		
+		<div>
+			<div><label for="encrtyptedMessage">Encrypted Message</label></div>
+			<div>
+				<textarea id="encrtyptedMessageHex" placeholder="Hex view" style="border: 1px solid black; width: 450px; min-width: 450px; max-width: 450px; height: 256px; min-height: 256px; max-height: 256px; display: inline-block;"></textarea>
+				<textarea id="encrtyptedMessage" readonly style="border: 1px solid grey; width: 450px; min-width: 450px; max-width: 450px; height: 256px; min-height: 256px; max-height: 256px; display: inline-block;"></textarea>
+			</div>
+		</div>
+	</div>
+	
+	
+	
+	<div style="margin: auto; width: 928px; text-align: center;">
+		<textarea id="console" placeholder="Console" style="border: 1px solid grey; width: 800px; height: 156px;" readonly></textarea>
+	</div>
+
+	<script src="sha3.js"></script>
+	<script src="codebook.js"></script>
+	<script src="jquery.js"></script>
+	
+	<script>
+		
+		$("#message").keyup(function(){
+			var message = $("#message").val();
+			$("#messageHex").val(toHex(message));
+		});
+		
+		$("#encrypt").click(function(){
+			var message = $("#message").val();
+			var password = $("#password").val();
+			var start = Date.now();
+			var encrtyptedMessage = codebook.encrypt(message, password);
+			var end = Date.now();
+			var encrtyptedMessageHex = toHex(encrtyptedMessage);
+			$("#encrtyptedMessageHex").val(encrtyptedMessageHex);
+			$("#encrtyptedMessage").val(encrtyptedMessage);
+			var consoleMsg = message.length + " characters were encrypted in " + (end - start) + " ms\r\n";
+			$("#console").append(consoleMsg);
+			$("#console")[0].scrollTop = $("#console")[0].scrollHeight;
+		});
+		
+		$("#decrypt").click(function(){
+			var encrtyptedMessageHex = $("#encrtyptedMessageHex").val();
+			var encrtyptedMessage = fromHex(encrtyptedMessageHex);
+			var password = $("#password").val();
+			var start = Date.now();
+			var message = codebook.decrypt(encrtyptedMessage, password);
+			var end = Date.now();
+			$("#message").val(message);
+			var consoleMsg = message.length + " characters were decrypted in " + (end - start) + " ms\r\n";
+			$("#console").append(consoleMsg);
+			$("#console")[0].scrollTop = $("#console")[0].scrollHeight;
+		});
+	
+		var HEX_VALUES_PER_LINE = 18;
+	
+		function toHex(byteString)
+		{
+			var linebreakCounter = HEX_VALUES_PER_LINE;
+			var result = "";
+			
+			for(var i=0; i < byteString.length; i++)
+			{
+				var hex = byteString.charCodeAt(i).toString(16);
+				if(hex.length < 2) hex = "0" + hex;
+				result += hex + " ";
+				if(--linebreakCounter == 0)
+				{
+					result += "\r\n";
+					linebreakCounter = HEX_VALUES_PER_LINE;
+				}
+			}
+			
+			return result;
+		}
+	
+		function fromHex(hexString)
+		{
+			var result = "";
+			debugger;
+			hexString = hexString.replace(/\s/g, "");
+			var hexValues = hexString.match(/[a-zA-Z0-9]{1,2}/g);
+			
+			for(var hexValue of hexValues)
+			{
+				result += String.fromCharCode(parseInt(hexValue, 16));
+			}
+			
+			return result;
+		}
+	
+	
+	</script>
+</body>
+</html>
